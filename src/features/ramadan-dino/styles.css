@@ -1,0 +1,26 @@
+.ramadan-dino-shell {
+  width: 100%;
+  border: 3px solid #14202d;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 8px,
+      rgba(255, 255, 255, 0.04) 8px,
+      rgba(255, 255, 255, 0.04) 16px
+    ),
+    #09131e;
+  padding: 8px;
+}
+
+.ramadan-dino-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  touch-action: none;
+  background: #000;
+}

@@ -1,0 +1,265 @@
+You are given a task to integrate an existing React component in the codebase
+
+The codebase should support:
+- shadcn project structure  
+- Tailwind CSS
+- Typescript
+
+If it doesn't, provide instructions on how to setup project via shadcn CLI, install Tailwind or Typescript.
+
+Determine the default path for components and styles. 
+If default path for components is not /components/ui, provide instructions on why it's important to create this folder
+Copy-paste this component to /components/ui folder:
+```tsx
+ai-input.tsx
+"use client";
+
+import { CornerRightUp, Mic } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { useAutoResizeTextarea } from "@/components/hooks/use-auto-resize-textarea";
+
+interface AIInputProps {
+  id?: string
+  placeholder?: string
+  minHeight?: number
+  maxHeight?: number
+  onSubmit?: (value: string) => void
+  className?: string
+}
+
+export function AIInput({
+  id = "ai-input",
+  placeholder = "Type your message...",
+  minHeight = 52,
+  maxHeight = 200,
+  onSubmit,
+  className
+}: AIInputProps) {
+  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
+    minHeight,
+    maxHeight,
+  });
+  const [inputValue, setInputValue] = useState("");
+
+  const handleReset = () => {
+    if (!inputValue.trim()) return;
+    onSubmit?.(inputValue);
+    setInputValue("");
+    adjustHeight(true);
+  };
+
+  return (
+    <div className={cn("w-full py-4", className)}>
+      <div className="relative max-w-xl w-full mx-auto">
+        <Textarea
+          id={id}
+          placeholder={placeholder}
+          className={cn(
+            "max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-16",
+            "placeholder:text-black/50 dark:placeholder:text-white/50",
+            "border-none ring-black/20 dark:ring-white/20",
+            "text-black dark:text-white text-wrap",
+            "overflow-y-auto resize-none",
+            "focus-visible:ring-0 focus-visible:ring-offset-0",
+            "transition-[height] duration-100 ease-out",
+            "leading-[1.2] py-[16px]",
+            `min-h-[${minHeight}px]`,
+            `max-h-[${maxHeight}px]`,
+            "[&::-webkit-resizer]:hidden" // Скрываем ресайзер
+          )}
+          ref={textareaRef}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            adjustHeight();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleReset();
+            }
+          }}
+        />
+
+        <div
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200",
+            inputValue ? "right-10" : "right-3"
+          )}
+        >
+          <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
+        </div>
+       <button
+  onClick={handleReset}
+  type="button"
+  className={cn(
+    "absolute top-1/2 -translate-y-1/2 right-3",
+    "rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1",
+    "transition-all duration-200",
+    inputValue 
+      ? "opacity-100 scale-100" 
+      : "opacity-0 scale-95 pointer-events-none"
+  )}
+>
+  <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
+</button>
+      </div>
+    </div>
+  );
+}
+
+demo.tsx
+import { AIInput } from "@/components/ui/ai-input"
+
+export function AIInputDemo() {
+  return (
+    <div className="space-y-8 min-w-[400px]">
+      <div>
+        <AIInput 
+          onSubmit={(value) => console.log('Submitted:', value)} 
+        />
+      </div>
+    </div>
+  )
+}
+```
+
+Copy-paste these files for dependencies:
+```tsx
+kokonutd/use-auto-resize-textarea
+import { useEffect, useRef, useCallback } from "react";
+
+interface UseAutoResizeTextareaProps {
+    minHeight: number;
+    maxHeight?: number;
+}
+
+export function useAutoResizeTextarea({
+    minHeight,
+    maxHeight,
+}: UseAutoResizeTextareaProps) {
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const adjustHeight = useCallback(
+        (reset?: boolean) => {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+
+            if (reset) {
+                textarea.style.height = `${minHeight}px`;
+                return;
+            }
+
+            // Temporarily shrink to get the right scrollHeight
+            textarea.style.height = `${minHeight}px`;
+
+            // Calculate new height
+            const newHeight = Math.max(
+                minHeight,
+                Math.min(
+                    textarea.scrollHeight,
+                    maxHeight ?? Number.POSITIVE_INFINITY
+                )
+            );
+
+            textarea.style.height = `${newHeight}px`;
+        },
+        [minHeight, maxHeight]
+    );
+
+    useEffect(() => {
+        // Set initial height
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = `${minHeight}px`;
+        }
+    }, [minHeight]);
+
+    // Adjust height on window resize
+    useEffect(() => {
+        const handleResize = () => adjustHeight();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [adjustHeight]);
+
+    return { textareaRef, adjustHeight };
+}
+
+```
+```tsx
+shadcn/textarea
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <textarea
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Textarea.displayName = "Textarea"
+
+export { Textarea }
+
+```
+
+Install NPM dependencies:
+```bash
+lucide-react
+```
+
+Extend existing tailwind.config.js with this code:
+```js
+module.exports = {
+  theme: {
+    extend: {
+      keyframes: {
+        'fade-scale': {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateY(-50%) scale(0.95)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translateY(-50%) scale(1)'
+          }
+        }
+      },
+      animation: {
+        'fade-scale': 'fade-scale 0.2s ease-out'
+      }
+    }
+  }
+}
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's argumens and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+ - What data/props will be passed to this component?
+ - Are there any specific state management requirements?
+ - Are there any required assets (images, icons, etc.)?
+ - What is the expected responsive behavior?
+ - What is the best place to use this component in the app?
+
+Steps to integrate
+ 0. Copy paste all the code above in the correct directories
+ 1. Install external dependencies
+ 2. Fill image assets with Unsplash stock images you know exist
+ 3. Use lucide-react icons for svgs or logos if component requires them

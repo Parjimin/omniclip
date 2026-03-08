@@ -1,0 +1,7 @@
+.next
+node_modules
+.env*
+coverage
+storage/jobs
+storage/sessions
+*.log
