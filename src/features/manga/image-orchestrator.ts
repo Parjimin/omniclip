@@ -8,9 +8,10 @@ import { QwenImageEditService } from "@/lib/ai/qwen-image-edit-service";
 import { QwenImage20GenerateService } from "@/lib/ai/qwen-image-20-generate-service";
 import { WanImageService } from "@/lib/ai/wan-image-service";
 import { retry } from "@/lib/ai/retries";
+import { APP_CONFIG } from "@/lib/app-config";
 
 function createImageService() {
-  const provider = (process.env.IMAGE_PROVIDER ?? "wan").toLowerCase();
+  const provider = APP_CONFIG.imageProvider.toLowerCase();
   if (provider === "qwen") {
     return new QwenImageEditService();
   }
@@ -99,7 +100,7 @@ async function loadStyleReferenceImagesDataUrl(
       });
     }
 
-    const showStyleWarn = process.env.STYLE_PACK_VERBOSE_WARN === "true";
+    const showStyleWarn = APP_CONFIG.stylePackVerboseWarn;
     if (showStyleWarn && missingFiles.length > 0) {
       console.warn(
         `[style-pack] ${artStyle} missing references: ${missingFiles.join(", ")} (.png/.jpg/.jpeg/.webp)`,
@@ -207,28 +208,24 @@ function createConfiguredImageService(): { service: ImageService; provider: "wan
 
 function buildNegativePrompt(session: SessionState): string | undefined {
   const textLeakNegativePrompt =
-    process.env.TEXT_LEAK_NEGATIVE_PROMPT ??
-    "english text in speech bubble, prompt instructions, technical labels, metadata text, ui labels, template text, task text, scene text, grid text, cell text, long paragraph inside bubble, watermark, logo, signature, prompt text pasted into bubble";
+    APP_CONFIG.prompts.textLeakNegative;
 
   const consistencyNegativePrompt =
-    process.env.CONSISTENCY_NEGATIVE_PROMPT ??
-    "inconsistent outfit, costume changed, hairstyle changed, face drift, different character face, inconsistent accessories, background drift, inconsistent setting, inconsistent lighting, blurry face, distorted hands";
+    APP_CONFIG.prompts.consistencyNegative;
 
   if (session.generationPreferences.visualMode !== "manga_bw") {
     return `${textLeakNegativePrompt}, ${consistencyNegativePrompt}`;
   }
 
   const mangaBwNegativePrompt =
-    process.env.MANGA_BW_NEGATIVE_PROMPT ??
-    "full color, colorful image, saturated colors, vivid RGB, neon palette, watercolor tone";
+    APP_CONFIG.prompts.mangaBwNegative;
 
   return `${mangaBwNegativePrompt}, ${textLeakNegativePrompt}, ${consistencyNegativePrompt}`;
 }
 
 function buildQwen20BaseNegativePrompt(session: SessionState): string {
   const base =
-    process.env.QWEN_IMAGE_BASE_NEGATIVE_PROMPT ??
-    "generic anime face, inconsistent character face, changed hairstyle, changed outfit, simple recolor only, english text, readable text, speech bubble, speech balloon, watermark, logo, signature, realistic photo rendering, weak screentone, weak line art";
+    APP_CONFIG.prompts.qwenImageBaseNegative;
 
   if (session.generationPreferences.visualMode === "manga_bw") {
     return `full color, colorful image, saturated colors, ${base}`;
@@ -245,7 +242,7 @@ export function createDeterministicPanelSeed(args: {
   session: SessionState;
   panel: PanelSpec;
 }): number {
-  const manualSeed = process.env.WAN_FIXED_SEED;
+  const manualSeed = APP_CONFIG.fixedSeed;
   const base = manualSeed?.trim()
     ? `${manualSeed}|${args.panel.index}`
     : `${args.session.id}|${args.session.name}|${args.session.theme}|${args.session.artStyle}|${args.panel.index}|${args.panel.continuityToken}`;
@@ -310,7 +307,7 @@ export async function renderPanels(args: {
   const styleImagesForProvider = pickStyleImagesForProvider(service, styleImageDataUrls);
   const promptExtend =
     provider === "wan"
-      ? (process.env.WAN_PROMPT_EXTEND ?? "true").toLowerCase() === "true"
+      ? APP_CONFIG.wan.promptExtend
       : undefined;
   console.info(`[image-provider] using ${provider} for panel generation`);
 

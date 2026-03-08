@@ -1,4 +1,5 @@
 import { retry } from "./retries";
+import { APP_CONFIG } from "@/lib/app-config";
 
 interface Wan25ClientConfig {
   apiKey: string;
@@ -35,18 +36,6 @@ function withBase(baseUrl: string, endpoint: string): string {
   return `${baseUrl.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
 }
 
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value == null) {
-    return fallback;
-  }
-  return value.toLowerCase() === "true";
-}
-
-function parseNum(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 function normalizeTaskEndpoint(template: string, taskId: string): string {
   return template.replace("{taskId}", taskId).replace("{task_id}", taskId);
 }
@@ -66,9 +55,9 @@ function buildWan25Payload(input: Wan25RefineInput) {
     parameters: {
       negative_prompt: input.negativePrompt,
       n: 1,
-      prompt_extend: input.promptExtend ?? parseBool(process.env.WAN25_PROMPT_EXTEND, true),
-      watermark: parseBool(process.env.WAN25_WATERMARK, false),
-      size: input.size ?? process.env.WAN25_SIZE,
+      prompt_extend: input.promptExtend ?? APP_CONFIG.wan25.promptExtend,
+      watermark: APP_CONFIG.wan25.watermark,
+      size: input.size ?? APP_CONFIG.wan25.size,
       seed: Number.isInteger(input.seed) ? input.seed : undefined,
     },
   };
@@ -80,24 +69,12 @@ export class Wan25Client {
   constructor(config?: Partial<Wan25ClientConfig>) {
     this.config = {
       apiKey: config?.apiKey ?? requiredApiKey(),
-      baseUrl:
-        config?.baseUrl ??
-        process.env.WAN25_BASE_URL ??
-        process.env.WAN_BASE_URL ??
-        "https://dashscope-intl.aliyuncs.com/api/v1",
-      endpoint:
-        config?.endpoint ??
-        process.env.WAN25_ENDPOINT ??
-        "/services/aigc/image2image/image-synthesis",
-      taskEndpointTemplate:
-        config?.taskEndpointTemplate ??
-        process.env.WAN25_TASK_ENDPOINT ??
-        process.env.WAN_TASK_ENDPOINT ??
-        "/tasks/{taskId}",
-      timeoutMs: config?.timeoutMs ?? parseNum(process.env.WAN25_TIMEOUT_MS, 240_000),
-      pollIntervalMs:
-        config?.pollIntervalMs ?? parseNum(process.env.WAN25_POLL_INTERVAL_MS, 5_000),
-      maxPollMs: config?.maxPollMs ?? parseNum(process.env.WAN25_MAX_POLL_MS, 300_000),
+      baseUrl: config?.baseUrl ?? APP_CONFIG.wan25.baseUrl,
+      endpoint: config?.endpoint ?? APP_CONFIG.wan25.endpoint,
+      taskEndpointTemplate: config?.taskEndpointTemplate ?? APP_CONFIG.wan25.taskEndpoint,
+      timeoutMs: config?.timeoutMs ?? APP_CONFIG.wan25.timeoutMs,
+      pollIntervalMs: config?.pollIntervalMs ?? APP_CONFIG.wan25.pollIntervalMs,
+      maxPollMs: config?.maxPollMs ?? APP_CONFIG.wan25.maxPollMs,
     };
   }
 

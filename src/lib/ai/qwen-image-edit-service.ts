@@ -1,4 +1,5 @@
 import { QwenClient } from "./qwen-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 function stripDataUrlPrefix(value?: string): string | undefined {
   if (!value) {
@@ -14,7 +15,7 @@ export class QwenImageEditService {
 
   constructor(client?: QwenClient) {
     this.client = client ?? new QwenClient();
-    this.model = process.env.QWEN_IMAGE_MODEL ?? "qwen-image-edit-max";
+    this.model = APP_CONFIG.qwen.imageEditModel;
   }
 
   async generatePanel(input: {

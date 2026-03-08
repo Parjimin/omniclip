@@ -1,0 +1,61 @@
+export const APP_CONFIG = {
+  imageProvider: "wan" as const,
+  stylePackVerboseWarn: false,
+  debugForceSinglePanel: false,
+  fixedSeed: "",
+  prompts: {
+    textLeakNegative:
+      "english text in speech bubble, prompt instructions, technical labels, metadata text, ui labels, template text, task text, scene text, grid text, cell text, long paragraph inside bubble, watermark, logo, signature, prompt text pasted into bubble",
+    consistencyNegative:
+      "inconsistent outfit, costume changed, hairstyle changed, face drift, different character face, inconsistent accessories, background drift, inconsistent setting, inconsistent lighting, blurry face, distorted hands",
+    mangaBwNegative:
+      "full color, colorful image, saturated colors, vivid RGB, neon palette, watercolor tone",
+    qwenImageBaseNegative:
+      "generic anime face, inconsistent character face, changed hairstyle, changed outfit, simple recolor only, english text, readable text, speech bubble, speech balloon, watermark, logo, signature, realistic photo rendering, weak screentone, weak line art",
+  },
+  qwen: {
+    baseUrl: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    chatEndpoint: "/chat/completions",
+    imageEndpoint: "/images/generations",
+    timeoutMs: 180_000,
+    chatModel: "qwen3.5-plus",
+    imageEditModel: "qwen-image-edit-max",
+  },
+  wan: {
+    baseUrl: "https://dashscope-intl.aliyuncs.com/api/v1",
+    model: "wan2.6-image",
+    syncEndpoint: "/services/aigc/multimodal-generation/generation",
+    asyncEndpoint: "/services/aigc/image-generation/generation",
+    taskEndpoint: "/tasks/{taskId}",
+    timeoutMs: 240_000,
+    pollIntervalMs: 5_000,
+    maxPollMs: 300_000,
+    useAsync: true,
+    size: "1024*1536",
+    promptExtend: true,
+    watermark: false,
+  },
+  wan25: {
+    model: "wan2.5-i2i-preview",
+    baseUrl: "https://dashscope-intl.aliyuncs.com/api/v1",
+    endpoint: "/services/aigc/image2image/image-synthesis",
+    taskEndpoint: "/tasks/{taskId}",
+    timeoutMs: 240_000,
+    pollIntervalMs: 5_000,
+    maxPollMs: 300_000,
+    promptExtend: true,
+    watermark: false,
+    size: "1024*1536",
+  },
+  qwenImage20: {
+    baseUrl: "https://dashscope-intl.aliyuncs.com/api/v1",
+    endpoint: "/services/aigc/multimodal-generation/generation",
+    timeoutMs: 240_000,
+    downloadTimeoutMs: 45_000,
+    model: "qwen-image-2.0-pro",
+    size: "1024*1536",
+    trueCfgScale: 4.5,
+    guidanceScale: 4.5,
+    numInferenceSteps: 50,
+  },
+};

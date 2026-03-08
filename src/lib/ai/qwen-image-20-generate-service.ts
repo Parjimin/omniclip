@@ -1,4 +1,5 @@
 import { QwenImage20Client } from "./qwen-image-20-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export class QwenImage20GenerateService {
   private readonly client: QwenImage20Client;
@@ -6,7 +7,7 @@ export class QwenImage20GenerateService {
 
   constructor(client?: QwenImage20Client, model?: string) {
     this.client = client ?? new QwenImage20Client();
-    this.model = model ?? process.env.QWEN_IMAGE_BASE_MODEL ?? "qwen-image-2.0-pro";
+    this.model = model ?? APP_CONFIG.qwenImage20.model;
   }
 
   async generatePanel(input: {
@@ -38,7 +39,7 @@ export class QwenImage20GenerateService {
       negativePrompt: input.negativePrompt,
       seed: input.seed,
       promptExtend: input.promptExtend,
-      size: process.env.QWEN_IMAGE_BASE_SIZE ?? process.env.QWEN_IMAGE_REFINER_SIZE ?? "1024*1536",
+      size: APP_CONFIG.qwenImage20.size,
     });
   }
 }

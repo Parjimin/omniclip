@@ -1,4 +1,5 @@
 import { QwenImage20Client } from "./qwen-image-20-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export class QwenImage20RefineService {
   private readonly client: QwenImage20Client;
@@ -6,7 +7,7 @@ export class QwenImage20RefineService {
 
   constructor(client?: QwenImage20Client, model?: string) {
     this.client = client ?? new QwenImage20Client();
-    this.model = model ?? process.env.QWEN_IMAGE_REFINER_MODEL ?? "qwen-image-2.0-pro";
+    this.model = model ?? APP_CONFIG.qwenImage20.model;
   }
 
   async refinePanel(input: {

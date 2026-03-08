@@ -1,4 +1,5 @@
 import { WanImageClient } from "./wan-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export class WanImageService {
   private readonly client: WanImageClient;
@@ -6,7 +7,7 @@ export class WanImageService {
 
   constructor(client?: WanImageClient) {
     this.client = client ?? new WanImageClient();
-    this.model = process.env.WAN_MODEL ?? "wan2.6-image";
+    this.model = APP_CONFIG.wan.model;
   }
 
   async generatePanel(input: {
@@ -48,7 +49,7 @@ export class WanImageService {
       prompt: input.prompt,
       imageDataUrls: images,
       negativePrompt: input.negativePrompt,
-      size: process.env.WAN_SIZE ?? "1024*1536",
+      size: APP_CONFIG.wan.size,
       seed: input.seed,
       promptExtend: input.promptExtend,
     });

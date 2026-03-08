@@ -6,6 +6,7 @@ import {
   shouldRewriteDialogue,
 } from "@/features/manga/dialogue-planner";
 import { QwenClient } from "./qwen-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 interface StoryGraphResponse {
   draftOutline: string;
@@ -431,7 +432,7 @@ export class Qwen35Service {
 
   constructor(client?: QwenClient) {
     this.client = client ?? new QwenClient();
-    this.model = process.env.QWEN_CHAT_MODEL ?? "qwen3.5-plus";
+    this.model = APP_CONFIG.qwen.chatModel;
   }
 
   async generateStoryGraph(args: {

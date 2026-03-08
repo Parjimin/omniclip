@@ -1,4 +1,5 @@
 import { Wan25Client } from "./wan25-client";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export class Wan25ImageRefineService {
   private readonly client: Wan25Client;
@@ -6,7 +7,7 @@ export class Wan25ImageRefineService {
 
   constructor(client?: Wan25Client) {
     this.client = client ?? new Wan25Client();
-    this.model = process.env.WAN25_MODEL ?? "wan2.5-i2i-preview";
+    this.model = APP_CONFIG.wan25.model;
   }
 
   async refinePanel(input: {

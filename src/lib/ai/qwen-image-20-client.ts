@@ -1,4 +1,5 @@
 import { retry } from "./retries";
+import { APP_CONFIG } from "@/lib/app-config";
 
 interface QwenImage20ClientConfig {
   apiKey: string;
@@ -16,11 +17,6 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-function positiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 function withBase(baseUrl: string, endpoint: string): string {
   if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
     return endpoint;
@@ -34,19 +30,10 @@ export class QwenImage20Client {
   constructor(config?: Partial<QwenImage20ClientConfig>) {
     this.config = {
       apiKey: config?.apiKey ?? requiredEnv("QWEN_API_KEY"),
-      baseUrl:
-        config?.baseUrl ??
-        process.env.QWEN_IMAGE_REFINER_BASE_URL ??
-        "https://dashscope-intl.aliyuncs.com/api/v1",
-      endpoint:
-        config?.endpoint ??
-        process.env.QWEN_IMAGE_REFINER_ENDPOINT ??
-        "/services/aigc/multimodal-generation/generation",
-      timeoutMs:
-        config?.timeoutMs ?? positiveInt(process.env.QWEN_IMAGE_REFINER_TIMEOUT_MS, 240_000),
-      downloadTimeoutMs:
-        config?.downloadTimeoutMs ??
-        positiveInt(process.env.QWEN_IMAGE_DOWNLOAD_TIMEOUT_MS, 45_000),
+      baseUrl: config?.baseUrl ?? APP_CONFIG.qwenImage20.baseUrl,
+      endpoint: config?.endpoint ?? APP_CONFIG.qwenImage20.endpoint,
+      timeoutMs: config?.timeoutMs ?? APP_CONFIG.qwenImage20.timeoutMs,
+      downloadTimeoutMs: config?.downloadTimeoutMs ?? APP_CONFIG.qwenImage20.downloadTimeoutMs,
     };
   }
 

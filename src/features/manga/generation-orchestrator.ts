@@ -14,6 +14,7 @@ import {
   updateGenerationJob,
 } from "@/lib/runtime-store";
 import { jobDir, saveBinaryFile } from "@/lib/storage";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export async function runGenerationJob(jobId: string) {
   const job = getGenerationJob(jobId);
@@ -85,8 +86,7 @@ export async function runGenerationJob(jobId: string) {
       clearInterval(draftingHeartbeat);
     });
 
-    const debugForceSinglePanel =
-      (process.env.DEBUG_FORCE_SINGLE_PANEL ?? "false").toLowerCase() === "true";
+    const debugForceSinglePanel = APP_CONFIG.debugForceSinglePanel;
     const effectivePanelSpecs = debugForceSinglePanel ? panelSpecs.slice(0, 1) : panelSpecs;
     updateGenerationJob(jobId, {
       panelTargetCount: effectivePanelSpecs.length,

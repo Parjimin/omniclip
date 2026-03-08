@@ -1,4 +1,5 @@
 import { retry } from "./retries";
+import { APP_CONFIG } from "@/lib/app-config";
 
 interface WanClientConfig {
   apiKey: string;
@@ -37,18 +38,6 @@ function withBase(baseUrl: string, endpoint: string): string {
   return `${baseUrl.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
 }
 
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value == null) {
-    return fallback;
-  }
-  return value.toLowerCase() === "true";
-}
-
-function parseNum(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 function normalizeTaskEndpoint(template: string, taskId: string): string {
   return template.replace("{taskId}", taskId).replace("{task_id}", taskId);
 }
@@ -69,10 +58,10 @@ function buildWanPayload(input: WanGenerateInput) {
       ],
     },
     parameters: {
-      size: input.size ?? process.env.WAN_SIZE ?? "1024*1536",
+      size: input.size ?? APP_CONFIG.wan.size,
       negative_prompt: input.negativePrompt,
-      watermark: parseBool(process.env.WAN_WATERMARK, false),
-      prompt_extend: input.promptExtend ?? parseBool(process.env.WAN_PROMPT_EXTEND, true),
+      watermark: APP_CONFIG.wan.watermark,
+      prompt_extend: input.promptExtend ?? APP_CONFIG.wan.promptExtend,
       enable_interleave: !hasImage,
       n: hasImage ? 1 : undefined,
       max_images: hasImage ? undefined : 1,
@@ -108,27 +97,14 @@ export class WanImageClient {
   constructor(config?: Partial<WanClientConfig>) {
     this.config = {
       apiKey: config?.apiKey ?? requiredApiKey(),
-      baseUrl:
-        config?.baseUrl ??
-        process.env.WAN_BASE_URL ??
-        "https://dashscope-intl.aliyuncs.com/api/v1",
-      syncEndpoint:
-        config?.syncEndpoint ??
-        process.env.WAN_SYNC_ENDPOINT ??
-        "/services/aigc/multimodal-generation/generation",
-      asyncEndpoint:
-        config?.asyncEndpoint ??
-        process.env.WAN_ASYNC_ENDPOINT ??
-        "/services/aigc/image-generation/generation",
-      taskEndpointTemplate:
-        config?.taskEndpointTemplate ??
-        process.env.WAN_TASK_ENDPOINT ??
-        "/tasks/{taskId}",
-      timeoutMs: config?.timeoutMs ?? parseNum(process.env.WAN_TIMEOUT_MS, 240_000),
-      pollIntervalMs:
-        config?.pollIntervalMs ?? parseNum(process.env.WAN_POLL_INTERVAL_MS, 5_000),
-      maxPollMs: config?.maxPollMs ?? parseNum(process.env.WAN_MAX_POLL_MS, 300_000),
-      useAsync: config?.useAsync ?? parseBool(process.env.WAN_USE_ASYNC, true),
+      baseUrl: config?.baseUrl ?? APP_CONFIG.wan.baseUrl,
+      syncEndpoint: config?.syncEndpoint ?? APP_CONFIG.wan.syncEndpoint,
+      asyncEndpoint: config?.asyncEndpoint ?? APP_CONFIG.wan.asyncEndpoint,
+      taskEndpointTemplate: config?.taskEndpointTemplate ?? APP_CONFIG.wan.taskEndpoint,
+      timeoutMs: config?.timeoutMs ?? APP_CONFIG.wan.timeoutMs,
+      pollIntervalMs: config?.pollIntervalMs ?? APP_CONFIG.wan.pollIntervalMs,
+      maxPollMs: config?.maxPollMs ?? APP_CONFIG.wan.maxPollMs,
+      useAsync: config?.useAsync ?? APP_CONFIG.wan.useAsync,
     };
   }
 

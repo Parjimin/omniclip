@@ -1,4 +1,5 @@
 import { retry } from "./retries";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -11,11 +12,6 @@ interface QwenClientConfig {
   chatEndpoint: string;
   imageEndpoint: string;
   timeoutMs: number;
-}
-
-function positiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function requiredEnv(name: string): string {
@@ -58,17 +54,10 @@ export class QwenClient {
   constructor(config?: Partial<QwenClientConfig>) {
     this.config = {
       apiKey: config?.apiKey ?? requiredEnv("QWEN_API_KEY"),
-      baseUrl:
-        config?.baseUrl ??
-        process.env.QWEN_BASE_URL ??
-        "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
-      chatEndpoint:
-        config?.chatEndpoint ?? process.env.QWEN_CHAT_ENDPOINT ?? "/chat/completions",
-      imageEndpoint:
-        config?.imageEndpoint ??
-        process.env.QWEN_IMAGE_ENDPOINT ??
-        "/images/generations",
-      timeoutMs: config?.timeoutMs ?? positiveInt(process.env.QWEN_TIMEOUT_MS, 180_000),
+      baseUrl: config?.baseUrl ?? APP_CONFIG.qwen.baseUrl,
+      chatEndpoint: config?.chatEndpoint ?? APP_CONFIG.qwen.chatEndpoint,
+      imageEndpoint: config?.imageEndpoint ?? APP_CONFIG.qwen.imageEndpoint,
+      timeoutMs: config?.timeoutMs ?? APP_CONFIG.qwen.timeoutMs,
     };
   }
 

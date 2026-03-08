@@ -15,21 +15,11 @@ App berjalan di `http://localhost:3000`.
 ## Environment
 
 - `QWEN_API_KEY` (required)
-- `QWEN_BASE_URL` default: `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`
-- `QWEN_CHAT_ENDPOINT` default: `/chat/completions`
-- `QWEN_CHAT_MODEL` default: `qwen3.5-plus`
-- `QWEN_TIMEOUT_MS` default: `180000`
-- `IMAGE_PROVIDER` default: `wan` (`wan` | `qwen`)
-- `WAN_API_KEY` (fallback ke `QWEN_API_KEY` jika kosong)
-- `WAN_BASE_URL` default: `https://dashscope-intl.aliyuncs.com/api/v1`
-- `WAN_MODEL` default: `wan2.6-image`
-- `WAN_USE_ASYNC` default: `true`
-- `WAN_ASYNC_ENDPOINT` default: `/services/aigc/image-generation/generation`
-- `WAN_TASK_ENDPOINT` default: `/tasks/{taskId}`
-- `WAN_SIZE` default: `1024*1536` (portrait comic page)
-- `QWEN_IMAGE_ENDPOINT` default: `/images/generations` (dipakai jika `IMAGE_PROVIDER=qwen`)
-- `QWEN_IMAGE_MODEL` default: `qwen-image-edit-max` (fallback provider qwen)
-- `DEBUG_FORCE_SINGLE_PANEL` default: `false` (set `true` hanya untuk debug cepat 1 panel).
+- `WAN_API_KEY` (optional, kalau ingin beda key untuk request WAN; jika kosong akan fallback ke `QWEN_API_KEY`)
+- `WAN25_API_KEY` (optional, kalau ingin beda key untuk request WAN2.5 refine)
+
+Semua default model, endpoint, timeout, prompt tuning, dan toggle pipeline sekarang disimpan di:
+- [app-config.ts](/mnt/d/Project/004_Jobs/20260303_New/src/lib/app-config.ts)
 
 ## Flow
 
