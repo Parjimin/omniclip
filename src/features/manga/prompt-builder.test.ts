@@ -6,6 +6,7 @@ describe("prompt-builder", () => {
   it("builds standalone panel prompt without dialogue bubbles or technical english labels", () => {
     const session: SessionState = {
       id: "s1",
+      userId: "user-1",
       name: "Findop",
       theme: "mudik_ramadhan",
       artStyle: "jujutsu_kaisen",

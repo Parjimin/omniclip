@@ -1,0 +1,8 @@
+{
+  "id": "e52958fb-acb4-455a-9e05-7d9e08471ad9",
+  "email": "test@example.com",
+  "name": "Test User",
+  "hashedPasswordBase64": "TSm70dO+mJJmGukxkiqldmSV9m7TrFJZmNkXB0n7YNNddJiOB90S8GRb//hfJIh5tEezZ2hENxykSernOW5+qw==",
+  "saltBase64": "v/M1vxfKsCm5z0+Ajvnodw==",
+  "createdAt": 1773149828775
+}

@@ -23,6 +23,12 @@ const DEFAULT_PROGRESS: GenerationProgress = {
   message: "Job dibuat",
 };
 
+const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
+const JOB_TTL_MS = 2 * 60 * 60 * 1000;
+const PRUNE_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+const writeTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const DEBOUNCE_MS = 5_000;
+
 function sessionFilePath(sessionId: string) {
   return path.join(STORAGE_ROOT, "sessions", sessionId, "session.json");
 }
@@ -34,6 +40,29 @@ function jobFilePath(jobId: string) {
 function writeJsonSync(filePath: string, data: unknown) {
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+}
+
+function debouncedWriteJson(key: string, filePath: string, data: unknown) {
+  const existing = writeTimers.get(key);
+  if (existing) {
+    clearTimeout(existing);
+  }
+  writeTimers.set(
+    key,
+    setTimeout(() => {
+      writeTimers.delete(key);
+      writeJsonSync(filePath, data);
+    }, DEBOUNCE_MS),
+  );
+}
+
+function immediateWriteJson(key: string, filePath: string, data: unknown) {
+  const existing = writeTimers.get(key);
+  if (existing) {
+    clearTimeout(existing);
+    writeTimers.delete(key);
+  }
+  writeJsonSync(filePath, data);
 }
 
 function readJsonSync<T>(filePath: string): T | undefined {
@@ -67,10 +96,11 @@ function normalizeSession(session: SessionState): SessionState {
   };
 }
 
-export function createSession(input: SessionCreateInput) {
+export function createSession(userId: string, input: Omit<SessionCreateInput, "userId">) {
   const id = uuidv4();
   const session = normalizeSession({
     id,
+    userId,
     createdAt: Date.now(),
     selectedChoices: {},
     ...input,
@@ -177,6 +207,7 @@ export function setJobProgress(
     return;
   }
 
+  const statusChanged = status && status !== current.status;
   const next: GenerationJob = {
     ...current,
     status: status ?? current.status,
@@ -184,7 +215,14 @@ export function setJobProgress(
     updatedAt: Date.now(),
   };
   jobs.set(jobId, next);
-  writeJsonSync(jobFilePath(jobId), next);
+
+  // Immediate write on status change, debounced for progress-only updates
+  if (statusChanged) {
+    immediateWriteJson(`job:${jobId}`, jobFilePath(jobId), next);
+  } else {
+    debouncedWriteJson(`job:${jobId}`, jobFilePath(jobId), next);
+  }
+
   appendJobEvent(jobId, "progress", {
     status: next.status,
     progress: next.progress,
@@ -243,3 +281,45 @@ export function subscribeJobEvents(
     emitter.off("event", listener);
   };
 }
+
+/* ------------------------------------------------------------------ */
+/*  Memory cleanup — prevent leaks from unbounded Maps                */
+/* ------------------------------------------------------------------ */
+
+export function cleanupJob(jobId: string) {
+  emitters.get(jobId)?.removeAllListeners();
+  emitters.delete(jobId);
+  const timer = writeTimers.get(`job:${jobId}`);
+  if (timer) {
+    clearTimeout(timer);
+    writeTimers.delete(`job:${jobId}`);
+  }
+}
+
+export function cleanupSession(sessionId: string) {
+  sessions.delete(sessionId);
+  const timer = writeTimers.get(`session:${sessionId}`);
+  if (timer) {
+    clearTimeout(timer);
+    writeTimers.delete(`session:${sessionId}`);
+  }
+}
+
+function pruneExpiredEntries() {
+  const now = Date.now();
+
+  for (const [id, session] of sessions) {
+    if (now - session.createdAt > SESSION_TTL_MS) {
+      sessions.delete(id);
+    }
+  }
+
+  for (const [id, job] of jobs) {
+    if (now - job.updatedAt > JOB_TTL_MS) {
+      cleanupJob(id);
+      jobs.delete(id);
+    }
+  }
+}
+
+setInterval(pruneExpiredEntries, PRUNE_INTERVAL_MS);

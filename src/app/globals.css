@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap");
 @import "../features/ramadan-dino/styles.css";
+@import "tailwindcss";
 
 :root {
   --bg-deep: #090d14;
@@ -931,10 +932,10 @@ button:disabled {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 12px;
-  min-height: 214px;
-  padding: 18px;
-  border-radius: 24px;
+  gap: 8px;
+  min-height: 100px;
+  padding: 14px;
+  border-radius: 16px;
   border: 1px dashed rgb(31 40 51 / 0.34);
   outline: 1px solid rgb(255 255 255 / 0.08);
   background:
@@ -960,8 +961,8 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   border: 1px solid rgb(30 39 50 / 0.9);
   background: linear-gradient(180deg, rgb(255 255 255 / 0.94) 0%, rgb(248 237 221 / 0.92) 100%);
@@ -975,13 +976,13 @@ button:disabled {
 }
 
 .upload-dropzone-copy strong {
-  font-size: 1rem;
+  font-size: 0.8rem;
 }
 
 .upload-dropzone-copy span {
   color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .upload-preview-shell {

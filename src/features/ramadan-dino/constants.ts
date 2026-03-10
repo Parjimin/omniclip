@@ -13,11 +13,13 @@ export const BG_DRAW_HEIGHT = INTERNAL_HEIGHT;
 export const BG_DRAW_WIDTH = (BG_NATIVE_WIDTH / BG_NATIVE_HEIGHT) * BG_DRAW_HEIGHT;
 
 export const PLAYER_X = 180;
-export const GROUND_LINE_Y = INTERNAL_HEIGHT - 30;
+export const GROUND_LINE_Y = INTERNAL_HEIGHT - 3;
 export const PLAYER_GROUND_Y = GROUND_LINE_Y - PLAYER_DRAW_SIZE;
 
 export const GRAVITY = 2200;
 export const JUMP_VELOCITY = -860;
+export const MIN_JUMP_VELOCITY = -520;
+export const MAX_JUMP_HOLD_MS = 180;
 export const RUN_ANIMATION_INTERVAL_MS = 125;
 
 export const START_SPEED = 292;

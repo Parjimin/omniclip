@@ -131,6 +131,7 @@ export interface GenerationResult {
 
 export interface SessionState {
   id: string;
+  userId: string;
   name: string;
   theme: Theme;
   artStyle: string;
@@ -173,6 +174,7 @@ export interface GenerationJob {
 
 export interface SessionCreateInput {
   name: string;
+  userId: string;
   theme: Theme;
   artStyle: string;
   panelCount: number;

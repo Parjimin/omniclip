@@ -12,6 +12,17 @@ export async function POST(request: Request) {
     return errorResponse(parsed.error.issues[0]?.message ?? "Input tidak valid", 400);
   }
 
+  const userId = request.headers.get("x-user-id");
+  if (!userId) {
+    return errorResponse("Unauthorized", 401);
+  }
+
+  const { getSession } = await import("@/lib/runtime-store");
+  const session = getSession(parsed.data.sessionId);
+  if (!session || session.userId !== userId) {
+    return errorResponse("Session tidak ditemukan atau akses ditolak", 403);
+  }
+
   try {
     const result = applyChoice(parsed.data);
     return jsonResponse(result);

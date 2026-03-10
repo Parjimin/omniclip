@@ -71,7 +71,7 @@ function describeGenerationPreferences(session: SessionState): string {
 }
 
 function describePromptAddon(session: SessionState): string {
-  return "Tidak ada instruksi tambahan.";
+  return session.promptAddon?.trim() || "Tidak ada instruksi tambahan.";
 }
 
 function stripPanelReferences(text: string): string {

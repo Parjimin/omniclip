@@ -20,9 +20,23 @@ export async function GET(
     return errorResponse("Job tidak ditemukan", 404);
   }
 
+  const userId = request.headers.get("x-user-id");
+  if (!userId) {
+    return errorResponse("Unauthorized", 401);
+  }
+
+  const { getSession } = await import("@/lib/runtime-store");
+  const session = getSession(job.sessionId);
+  if (!session || session.userId !== userId) {
+    return errorResponse("Forbidden: You do not own this job", 403);
+  }
+
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
+      let closed = false;
+
       const send = (event: GenerationEvent) => {
+        if (closed) return;
         controller.enqueue(encodeEvent(event));
       };
 
@@ -39,15 +53,9 @@ export async function GET(
         send(event);
       }
 
-      const unsubscribe = subscribeJobEvents(jobId, (event) => {
-        send(event);
-      });
-
-      const heartbeat = setInterval(() => {
-        controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
-      }, 15000);
-
       const close = () => {
+        if (closed) return;
+        closed = true;
         clearInterval(heartbeat);
         unsubscribe();
         try {
@@ -56,6 +64,19 @@ export async function GET(
           // stream already closed
         }
       };
+
+      const unsubscribe = subscribeJobEvents(jobId, (event) => {
+        send(event);
+        // Auto-close stream when job reaches terminal state
+        if (event.type === "completed" || event.type === "failed") {
+          close();
+        }
+      });
+
+      const heartbeat = setInterval(() => {
+        if (closed) return;
+        controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
+      }, 15000);
 
       request.signal.addEventListener("abort", close);
     },

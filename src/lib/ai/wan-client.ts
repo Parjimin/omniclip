@@ -259,6 +259,11 @@ export class WanImageClient {
   }
 
   private async downloadImage(imageUrl: string): Promise<Buffer> {
+    const { validateExternalUrl } = await import("@/lib/security");
+    if (!validateExternalUrl(imageUrl)) {
+      throw new Error("WAN image URL tidak valid atau mengarah ke host internal.");
+    }
+
     const response = await retry(
       async () => fetch(imageUrl),
       { retries: 2, minDelayMs: 900, maxDelayMs: 3000 },

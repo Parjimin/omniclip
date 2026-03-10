@@ -21,9 +21,7 @@ function createImageService() {
   if (provider === "wan" || provider === "wan2.6" || provider === "wan2.6-image") {
     return new WanImageService();
   }
-  if (provider !== "wan") {
-    console.warn(`[image-provider] unknown provider "${provider}", fallback ke WAN2.6`);
-  }
+  console.warn(`[image-provider] unknown provider "${provider}", fallback ke WAN2.6`);
   return new WanImageService();
 }
 

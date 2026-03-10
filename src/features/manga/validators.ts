@@ -7,7 +7,13 @@ import {
 export const sessionCreateSchema = z.object({
   name: z.string().trim().min(2).max(40),
   theme: z.enum(["mudik_ramadhan", "petualangan"]),
-  artStyle: z.string().trim().min(2).max(64),
+  artStyle: z.enum([
+    "jujutsu_kaisen",
+    "one_piece",
+    "naruto",
+    "bleach",
+    "demon_slayer",
+  ]),
   panelCount: z.coerce.number().int().min(4).max(20),
   promptAddon: z.string().trim().max(4000).optional(),
   characterPreferences: z

@@ -6,6 +6,7 @@ describe("image-orchestrator", () => {
   it("creates stable but distinct panel seed values", () => {
     const session: SessionState = {
       id: "session-1",
+      userId: "user-1",
       name: "Findop",
       theme: "mudik_ramadhan",
       artStyle: "jujutsu_kaisen",

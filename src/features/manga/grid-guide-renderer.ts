@@ -19,9 +19,6 @@ async function loadSharp(): Promise<SharpFactory | null> {
   return sharpImportPromise;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
 
 function buildGridGuideSvg(panel: PanelSpec, width: number, height: number): string {
   const parts: string[] = [

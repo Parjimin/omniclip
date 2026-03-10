@@ -169,6 +169,11 @@ export class Wan25Client {
   }
 
   private async downloadImage(url: string): Promise<Buffer> {
+    const { validateExternalUrl } = await import("@/lib/security");
+    if (!validateExternalUrl(url)) {
+      throw new Error("WAN2.5 image URL tidak valid atau mengarah ke host internal.");
+    }
+
     const response = await retry(
       async () => fetch(url),
       { retries: 1, minDelayMs: 700 },

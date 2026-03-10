@@ -14,9 +14,18 @@ export async function POST(request: Request) {
     return errorResponse(parsed.error.issues[0]?.message ?? "Input tidak valid", 400);
   }
 
+  const userId = request.headers.get("x-user-id");
+  if (!userId) {
+    return errorResponse("Unauthorized", 401);
+  }
+
   const session = getSession(parsed.data.sessionId);
   if (!session) {
     return errorResponse("Session tidak ditemukan", 404);
+  }
+
+  if (session.userId !== userId) {
+    return errorResponse("Forbidden: You do not own this session", 403);
   }
 
   try {

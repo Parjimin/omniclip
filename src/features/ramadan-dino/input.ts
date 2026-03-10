@@ -1,14 +1,20 @@
 export class InputController {
   private jumpQueued = false;
+  private jumpHeld = false;
+  private jumpHoldStartMs = 0;
   private crouchHeld = false;
   private holdTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private bound = false;
   private canvas: HTMLCanvasElement | null = null;
 
   private onKeyDown = (event: KeyboardEvent) => {
-    if (event.code === "Space") {
+    if (event.code === "Space" || event.code === "ArrowUp") {
       event.preventDefault();
-      this.jumpQueued = true;
+      if (!this.jumpHeld) {
+        this.jumpQueued = true;
+        this.jumpHeld = true;
+        this.jumpHoldStartMs = performance.now();
+      }
     }
     if (event.code === "ArrowDown") {
       this.crouchHeld = true;
@@ -16,13 +22,20 @@ export class InputController {
   };
 
   private onKeyUp = (event: KeyboardEvent) => {
+    if (event.code === "Space" || event.code === "ArrowUp") {
+      this.jumpHeld = false;
+    }
     if (event.code === "ArrowDown") {
       this.crouchHeld = false;
     }
   };
 
   private onPointerDown = () => {
-    this.jumpQueued = true;
+    if (!this.jumpHeld) {
+      this.jumpQueued = true;
+      this.jumpHeld = true;
+      this.jumpHoldStartMs = performance.now();
+    }
     this.clearHoldTimer();
     this.holdTimeoutId = setTimeout(() => {
       this.crouchHeld = true;
@@ -32,6 +45,7 @@ export class InputController {
   private onPointerUp = () => {
     this.clearHoldTimer();
     this.crouchHeld = false;
+    this.jumpHeld = false;
   };
 
   bind(canvas: HTMLCanvasElement) {
@@ -63,6 +77,7 @@ export class InputController {
     }
     this.canvas = null;
     this.jumpQueued = false;
+    this.jumpHeld = false;
     this.crouchHeld = false;
     this.clearHoldTimer();
   }
@@ -71,6 +86,15 @@ export class InputController {
     const next = this.jumpQueued;
     this.jumpQueued = false;
     return next;
+  }
+
+  isJumpHeld() {
+    return this.jumpHeld;
+  }
+
+  getJumpHoldMs() {
+    if (!this.jumpHeld) return 0;
+    return performance.now() - this.jumpHoldStartMs;
   }
 
   isCrouchHeld() {

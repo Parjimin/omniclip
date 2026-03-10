@@ -198,6 +198,11 @@ export class QwenClient {
       }
 
       if (first.url) {
+        const { validateExternalUrl } = await import("@/lib/security");
+        if (!validateExternalUrl(first.url)) {
+          errors.push(`${endpoint} -> URL tidak valid atau mengarah ke host internal`);
+          continue;
+        }
         const imageResponse = await fetch(first.url);
         if (!imageResponse.ok) {
           errors.push(`download url -> ${imageResponse.status}`);

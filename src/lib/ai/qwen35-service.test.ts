@@ -6,6 +6,7 @@ describe("Qwen35Service", () => {
   it("sanitizes prompt-leak dialogue and action into Indonesian scene instructions", async () => {
     const session: SessionState = {
       id: "s1",
+      userId: "user-1",
       name: "Findop",
       theme: "mudik_ramadhan",
       artStyle: "jujutsu_kaisen",

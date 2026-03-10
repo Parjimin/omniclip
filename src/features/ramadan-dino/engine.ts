@@ -48,6 +48,8 @@ export class RamadanDinoEngine implements RamadanDinoPublicApi {
   private options: RamadanDinoOptions = {};
   private input = new InputController();
   private assets: LoadedAssets | null = null;
+  private jumpSound: HTMLAudioElement | null = null;
+  private dieSound: HTMLAudioElement | null = null;
   private status: EngineStatus = "idle";
   private reason: StopReason | undefined;
   private rafId: number | null = null;
@@ -158,6 +160,17 @@ export class RamadanDinoEngine implements RamadanDinoPublicApi {
       this.assets = await loadAssets(this.options.assetsBasePath);
     }
 
+    // Load sound effects
+    const basePath = this.options.assetsBasePath ?? "/game-assets";
+    if (!this.jumpSound) {
+      this.jumpSound = new Audio(`${basePath}/jump.mp3`);
+      this.jumpSound.volume = 0.5;
+    }
+    if (!this.dieSound) {
+      this.dieSound = new Audio(`${basePath}/die.mp3`);
+      this.dieSound.volume = 0.6;
+    }
+
     this.resetWorld();
     this.status = "running";
     this.reason = undefined;
@@ -209,12 +222,20 @@ export class RamadanDinoEngine implements RamadanDinoPublicApi {
     this.elapsedMs += dt * 1000;
     const difficulty = calculateDifficulty(this.score);
 
-    updatePlayerPhysics({
+    const { jumped } = updatePlayerPhysics({
       player: this.player,
       dt,
       jumpPressed: this.input.consumeJump(),
+      jumpHeld: this.input.isJumpHeld(),
+      jumpHoldMs: this.input.getJumpHoldMs(),
       crouchHeld: this.input.isCrouchHeld(),
     });
+
+    // Play jump sound
+    if (jumped && this.jumpSound) {
+      this.jumpSound.currentTime = 0;
+      this.jumpSound.play().catch(() => {});
+    }
 
     this.bgX1 -= difficulty.speed * BACKGROUND_SPEED_FACTOR * dt;
     this.bgX2 -= difficulty.speed * BACKGROUND_SPEED_FACTOR * dt;
@@ -296,6 +317,13 @@ export class RamadanDinoEngine implements RamadanDinoPublicApi {
         this.reason = "game_over";
         this.cancelLoop();
         this.input.unbind();
+
+        // Play die sound
+        if (this.dieSound) {
+          this.dieSound.currentTime = 0;
+          this.dieSound.play().catch(() => {});
+        }
+
         this.bindRestartListeners();
         this.options.onGameOver?.(this.score);
         this.options.onExit?.("game_over");

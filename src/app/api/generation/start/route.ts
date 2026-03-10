@@ -2,20 +2,43 @@ import { ensureStoryGraph, getCurrentDecision } from "@/features/manga/story-orc
 import { generationStartSchema } from "@/features/manga/validators";
 import { errorResponse, jsonResponse } from "@/lib/http";
 import { createGenerationJob, getSession } from "@/lib/runtime-store";
+import { checkRateLimit, getClientIp, isValidOrigin } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  if (!isValidOrigin(request)) {
+    return errorResponse("Origin tidak valid", 403);
+  }
+
+  const ip = getClientIp(request);
+  const limit = checkRateLimit(`gen-start:${ip}`, 5, 600_000);
+  if (!limit.allowed) {
+    return errorResponse(
+      `Terlalu banyak request. Coba lagi dalam ${Math.ceil(limit.retryAfterMs / 1000)} detik.`,
+      429,
+    );
+  }
+
   const payload = await request.json().catch(() => null);
   const parsed = generationStartSchema.safeParse(payload);
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? "Input tidak valid", 400);
   }
 
+  const userId = request.headers.get("x-user-id");
+  if (!userId) {
+    return errorResponse("Unauthorized", 401);
+  }
+
   const session = getSession(parsed.data.sessionId);
   if (!session) {
     return errorResponse("Session tidak ditemukan", 404);
+  }
+
+  if (session.userId !== userId) {
+    return errorResponse("Forbidden: You do not own this session", 403);
   }
 
   try {
@@ -43,3 +66,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

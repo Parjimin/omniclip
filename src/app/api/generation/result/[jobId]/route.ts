@@ -17,7 +17,7 @@ async function countRenderedPanels(jobId: string): Promise<number> {
 }
 
 export async function GET(
-  _: Request,
+  request: Request,
   context: { params: Promise<{ jobId: string }> },
 ) {
   const { jobId } = await context.params;
@@ -27,8 +27,17 @@ export async function GET(
     return errorResponse("Job tidak ditemukan", 404);
   }
 
-  const renderedPanelCount = await countRenderedPanels(jobId);
+  const userId = request.headers.get("x-user-id");
+  if (!userId) {
+    return errorResponse("Unauthorized", 401);
+  }
+
   const session = getSession(job.sessionId);
+  if (!session || session.userId !== userId) {
+    return errorResponse("Forbidden: You do not own this job", 403);
+  }
+
+  const renderedPanelCount = await countRenderedPanels(jobId);
   const panelTargetCount = job.panelTargetCount ?? session?.panelCount ?? 0;
 
   return jsonResponse(

@@ -1,30 +1,6 @@
-type ClassValue =
-  | string
-  | number
-  | false
-  | null
-  | undefined
-  | ClassValue[]
-  | Record<string, boolean | null | undefined>;
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-function toClassName(value: ClassValue): string[] {
-  if (!value) {
-    return [];
-  }
-
-  if (typeof value === "string" || typeof value === "number") {
-    return [String(value)];
-  }
-
-  if (Array.isArray(value)) {
-    return value.flatMap(toClassName);
-  }
-
-  return Object.entries(value)
-    .filter(([, enabled]) => Boolean(enabled))
-    .map(([key]) => key);
-}
-
-export function cn(...values: ClassValue[]) {
-  return values.flatMap(toClassName).join(" ");
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
